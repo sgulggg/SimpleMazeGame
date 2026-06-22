@@ -14,4 +14,16 @@
     <string name="win_message">用时 %1$s，共移动 %2$d 次。\n准备好挑战下一关了吗？</string>
     <string name="all_complete_title">全部通关！</string>
     <string name="all_complete_message">你已征服所有迷宫，真是迷宫大师！</string>
+    <string name="leaderboard">排行榜</string>
+    <string name="leaderboard_title">个人成绩榜</string>
+    <string name="leaderboard_empty">还没有记录，快去通关留下成绩吧！</string>
+    <string name="leaderboard_entry_format">第 %1$d 名 • 关卡 %2$d • 用时 %3$s • 移动 %4$d 次</string>
+    <string name="start_game">开始游戏</string>
+    <string name="select_level">选择关卡</string>
+    <string name="select_level_title">选择关卡</string>
+    <string name="back_home">返回首页</string>
+    <string name="exit_game">退出游戏</string>
+    <string name="close">关闭</string>
+    <string name="refresh_maze">刷新迷宫</string>
+    <string name="endless_mode">无尽模式</string>
 </resources>
