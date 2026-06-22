@@ -42,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
 
     private MazeLevel[] levels;
     private int currentLevelIndex;
+    private boolean endlessMode = false;
+    private MazeLevel endlessLevel;
+    private int endlessCount = 0;
     private final Handler timerHandler = new Handler(Looper.getMainLooper());
     private boolean timerRunning;
 
@@ -71,11 +74,21 @@ public class MainActivity extends AppCompatActivity {
         bindViews();
         setupMazeView();
         setupButtons();
-        int startLevel = getIntent().getIntExtra("start_level", -1);
-        if (startLevel >= 0 && startLevel < levels.length) {
-            loadLevel(startLevel);
-        } else {
+
+        endlessMode = getIntent().getBooleanExtra("endless_mode", false);
+        if (endlessMode) {
+            // disable prev/next in endless mode
+            prevButton.setEnabled(false);
+            nextButton.setEnabled(false);
+            // generate first endless level
             loadLevel(0);
+        } else {
+            int startLevel = getIntent().getIntExtra("start_level", -1);
+            if (startLevel >= 0 && startLevel < levels.length) {
+                loadLevel(startLevel);
+            } else {
+                loadLevel(0);
+            }
         }
     }
 
@@ -97,7 +110,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLevelComplete(long elapsedMs) {
                 timerRunning = false;
-                saveScore(elapsedMs, mazeView.getMoveCount(), currentLevelIndex);
+                if (endlessMode) saveScore(elapsedMs, mazeView.getMoveCount(), -1);
+                else saveScore(elapsedMs, mazeView.getMoveCount(), currentLevelIndex);
                 showWinDialog(elapsedMs);
             }
 
@@ -124,6 +138,15 @@ public class MainActivity extends AppCompatActivity {
         restartButton.setOnClickListener(v -> loadLevel(currentLevelIndex));
 
         refreshButton.setOnClickListener(v -> {
+            if (endlessMode) {
+                // regenerate endless level
+                generateEndlessLevel();
+                mazeView.loadLevel(endlessLevel);
+                levelTitleText.setText(endlessLevel.name);
+                levelIndexText.setText(getString(R.string.level_index_format, endlessCount, Integer.MAX_VALUE));
+                startTimer();
+                return;
+            }
             MazeLevel cur = levels[currentLevelIndex];
             if ("test".equals(cur.name)) {
                 MazeLevel newL = MazeLevel.createPrimLevel(cur.name, cur.rows, cur.cols);
@@ -142,6 +165,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadLevel(int index) {
         currentLevelIndex = index;
+        if (endlessMode) {
+            generateEndlessLevel();
+            mazeView.loadLevel(endlessLevel);
+            levelTitleText.setText(endlessLevel.name);
+            levelIndexText.setText(getString(R.string.level_index_format, endlessCount, Integer.MAX_VALUE));
+            moveCountText.setText(getString(R.string.move_count_format, 0));
+            timerText.setText(formatTime(0));
+            prevButton.setEnabled(false);
+            nextButton.setEnabled(false);
+            startTimer();
+            return;
+        }
+
         MazeLevel level = levels[index];
 
         mazeView.loadLevel(level);
@@ -166,19 +202,40 @@ public class MainActivity extends AppCompatActivity {
         String timeStr = formatTime(elapsedMs);
         String message = getString(R.string.win_message, timeStr, mazeView.getMoveCount());
 
-        new AlertDialog.Builder(this)
+        AlertDialog.Builder b = new AlertDialog.Builder(this)
                 .setTitle(R.string.win_title)
                 .setMessage(message)
-                .setPositiveButton(R.string.next_level, (dialog, which) -> {
-                    if (currentLevelIndex < levels.length - 1) {
-                        loadLevel(currentLevelIndex + 1);
-                    } else {
-                        showAllCompleteDialog();
-                    }
-                })
-                .setNegativeButton(R.string.replay, (dialog, which) -> loadLevel(currentLevelIndex))
-                .setCancelable(false)
-                .show();
+                .setCancelable(false);
+
+        if (endlessMode) {
+            b.setPositiveButton(R.string.next_level, (dialog, which) -> {
+                // generate next endless level
+                generateEndlessLevel();
+                mazeView.loadLevel(endlessLevel);
+                levelTitleText.setText(endlessLevel.name);
+                moveCountText.setText(getString(R.string.move_count_format, 0));
+                timerText.setText(formatTime(0));
+                startTimer();
+            });
+            b.setNegativeButton(R.string.replay, (dialog, which) -> {
+                // replay same endless level (just reload)
+                mazeView.loadLevel(endlessLevel);
+                moveCountText.setText(getString(R.string.move_count_format, 0));
+                timerText.setText(formatTime(0));
+                startTimer();
+            });
+        } else {
+            b.setPositiveButton(R.string.next_level, (dialog, which) -> {
+                if (currentLevelIndex < levels.length - 1) {
+                    loadLevel(currentLevelIndex + 1);
+                } else {
+                    showAllCompleteDialog();
+                }
+            });
+            b.setNegativeButton(R.string.replay, (dialog, which) -> loadLevel(currentLevelIndex));
+        }
+
+        b.show();
     }
 
     private void showAllCompleteDialog() {
@@ -287,7 +344,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private static String formatTime(long millis) {
+    private void generateEndlessLevel() {
+        // use size of last normal level if available, else default 15x15
+        int rows = 15, cols = 15;
+        if (levels != null && levels.length > 0) {
+            MazeLevel sample = levels[Math.max(0, levels.length - 1)];
+            rows = sample.rows;
+            cols = sample.cols;
+        }
+        endlessCount++;
+        String name = "无尽模式 " + endlessCount;
+        endlessLevel = MazeLevel.createPrimLevel(name, rows, cols);
+    }
+
+    private static String formatTime(long millis) {"}]}{
         long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
         long seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60;
         long tenths = (millis / 100) % 10;

@@ -25,4 +25,5 @@
     <string name="exit_game">退出游戏</string>
     <string name="close">关闭</string>
     <string name="refresh_maze">刷新迷宫</string>
+    <string name="endless_mode">无尽模式</string>
 </resources>
