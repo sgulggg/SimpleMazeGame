@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">迷宫探险</string>
+    <string name="game_title">迷宫探险</string>
+    <string name="touch_hint">在迷宫中滑动手指，移动发光小球到达金色出口</string>
+    <string name="level_index_format">关卡 %1$d / %2$d</string>
+    <string name="move_count_format">移动 %1$d 次</string>
+    <string name="prev_level">上一关</string>
+    <string name="next_level">下一关</string>
+    <string name="restart">重开</string>
+    <string name="replay">再玩一次</string>
+    <string name="replay_from_start">从第一关重来</string>
+    <string name="stay_here">留在此关</string>
+    <string name="win_title">恭喜通关！</string>
+    <string name="win_message">用时 %1$s，共移动 %2$d 次。\n准备好挑战下一关了吗？</string>
+    <string name="all_complete_title">全部通关！</string>
+    <string name="all_complete_message">你已征服所有迷宫，真是迷宫大师！</string>
+</resources>
